@@ -39,7 +39,13 @@ fi
 if [ ! -e "${CONTEXT_REPO_DEST_DIR}" ]; then
   git clone -b "${CONTEXT_REPO_BRANCH}" "${CONTEXT_REPO_URL}" "${CONTEXT_REPO_DEST_DIR}" &>> "${CONTEXT_REPO_RUN_LOG}"
 elif [ -d "${CONTEXT_REPO_DEST_DIR}/.git" ]; then
-  cd "${CONTEXT_REPO_DEST_DIR}" && git pull
+  cd "${CONTEXT_REPO_DEST_DIR}" && git fetch &>> "${CONTEXT_REPO_RUN_LOG}"
+  if $(git rev-parse --verify "${CONTEXT_REPO_BRANCH}"); then
+    git checkout "${CONTEXT_REPO_BRANCH}" &>> "${CONTEXT_REPO_RUN_LOG}"
+    git pull origin "${CONTEXT_REPO_BRANCH}" &>> "${CONTEXT_REPO_RUN_LOG}"
+  else
+    git checkout -b "${CONTEXT_REPO_BRANCH}" "origin/${CONTEXT_REPO_BRANCH}" &>> "${CONTEXT_REPO_RUN_LOG}"
+  fi
 else
   echo "ERROR: ${CONTEXT_REPO_DEST_DIR} exists and is not a git repo - cant clone or pull" >> "${CONTEXT_REPO_RUN_LOG}"
   exit 1
